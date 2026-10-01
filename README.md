@@ -1,41 +1,48 @@
-# OSC Fader PWA v1.2
+# OSC Console v2.0
 
-4chのWebフェーダーです。iOSでは物理振動の代わりに操作音と視覚フィードバックを使います。
+uOSC運用向けのWebコントロールサーフェスです。
+
+## OSC規約
+
+- uOSC Serverは共通箇所へ1つ配置
+- ギミック／トリガー: Port `3335`
+- フェーダーなど高頻度通信: Port `3336`（初期値）
+- Address: 小文字、`/`区切り、英数字とハイフンのみ
+- 1 Addressにつき原則1値
+- 不正なAddress・型・Portは警告して送信しません
+
+## UI
+
+- シンプル: 初見向け4ch
+- カスタム: 最大32ch、4chごとのBANK、DCA A〜D
+- DCAは基準値へ倍率を掛けます。100と50をDCA 50%にすると50と25を送信します。
+- 数値表示をタップすると直接値を入力できます。確定ボタンを押すまで送信しません。
+- ロックはタップで有効、解除は700ms長押しです。
+- 追従のやわらかさは0〜600msで調整できます。
+- Address、送信先IP、Port、パッチ、DCA、UI設定はブラウザのlocalStorageに保存します。
+
+## 同一LAN
+
+1. PCへNode.js LTSをインストールします。
+2. `local-server/start-local.bat` を実行します。
+3. 表示された `http://192.168.x.x:8080/` を同じルーターのiPhoneで開きます。
+4. 接続モードを「同一LAN」にします。
+5. OSC送信先IP、Port、各CHのAddressをブラウザで設定します。
+6. UnityのuOscServerを同じPort（通常3336）で待ち受けます。
+
+ブラウザはUDPを直接送れないため、ローカルブリッジがWebSocketをOSC/UDPへ変換します。インターネットやCloudflareは使用しません。送信先は安全のため、localhostまたはプライベートLANアドレスだけを許可しています。
+
+## クラウド中継
+
+1. `worker/`をCloudflare Workersへデプロイします。
+2. Unity PCへ `unity/CloudOscBridge.cs` を追加します。
+3. Worker URLと同じルームコードを設定します。
+4. 初期状態ではOSC送信先を `127.0.0.1:3336`へ固定します。LAN内の別PCへ送る場合だけ `allowLanTargets` を有効化します。
 
 ## GitHub Pages
 
-リポジトリの Settings → Pages で `main` / `(root)` を公開します。クラウドモードではCloudflare Workerを経由してUnityへ接続します。
+Settings → Pagesで `main` / `(root)` を公開します。更新後、右下が `v2.0.0`になっていることを確認してください。
 
-## 同一LANモード（インターネット不要）
+## iOS
 
-1. PCへNode.js LTSをインストールします。
-2. `local-server/start-local.bat`を実行します。初回のみ `ws` をインストールします。
-3. 表示された `http://192.168.x.x:8080/` を同じWi-FiのiPhoneで開きます。
-4. 設定 → 接続モードを「同一LAN」にして保存します。同じページから開いた場合、URLは空欄でも接続できます。
-5. Nodeサーバーは `/webfader/1`〜`/webfader/4` をfloat 0〜1で `127.0.0.1:9000` へOSC送信します。
-
-変更例（PowerShell）:
-
-```powershell
-$env:OSC_HOST="127.0.0.1"
-$env:OSC_PORT="9000"
-$env:HTTP_PORT="8080"
-node local-server/server.js
-```
-
-UnityではuOSCの `uOscServer` をポート9000で待ち受けます。
-
-## クラウドモード
-
-`worker/`をCloudflare Workersへデプロイし、PWAにWorker URLとルームコードを入力します。Unityでは `unity/CloudFaderToUosc.cs` とuOSCの `uOscClient`を同じGameObjectへ設定します。
-
-## iPhoneで音が出ない場合
-
-- iPhoneの消音モードを解除します。
-- 音量を上げます。
-- 設定の「操作音」をONにします。
-- ページを開いた後、一度フェーダーへ触れます。最初のタッチでWeb Audioを有効化します。
-
-## 注意
-
-GitHub Pages（HTTPS）からローカルの `ws://` へは接続できません。同一LANモードでは必ずPCの `http://PCのIP:8080/` を開いてください。Cloudflareモードとローカルモードは設定で切り替えられます。
+ダブルタップ／ピンチズームを抑止しています。操作音を使う場合は消音モードを解除し、ページを開いた後に一度タッチしてください。
