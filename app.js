@@ -14,6 +14,10 @@ function playTick(strong){audio??=new (window.AudioContext||window.webkitAudioCo
 function updateCard(card,value,remote=false){const slider=card.querySelector('.vertical-fader'),out=card.querySelector('output'),ch=Number(card.dataset.channel);slider.value=value;out.value=Math.round(value);out.textContent=Math.round(value);tick(card,ch,value);if(!remote)send(ch,Number(value),false)}
 $$('.fader-card').forEach(card=>{const slider=card.querySelector('.vertical-fader');slider.addEventListener('input',()=>updateCard(card,slider.value));slider.addEventListener('change',()=>send(Number(card.dataset.channel),Number(slider.value),true));card.querySelector('.reset-button').addEventListener('click',()=>{updateCard(card,50);send(Number(card.dataset.channel),50,true)})});
 function applyRemote(m){const card=$(`.fader-card[data-channel="${Number(m.channel)}"]`);if(card)updateCard(card,Math.max(0,Math.min(100,Number(m.value)*100)),true)}
+function sizeFaders(){document.querySelectorAll('.fader-zone').forEach(zone=>{const slider=zone.querySelector('.vertical-fader');slider.style.width=`${Math.max(220,zone.clientHeight-24)}px`})}
+new ResizeObserver(sizeFaders).observe(document.querySelector('.faders'));
+window.addEventListener('orientationchange',()=>setTimeout(sizeFaders,150));
+sizeFaders();
 $('#settingsButton').onclick=()=>dialog.showModal();$('#connectButton').onclick=()=>socket?.readyState===WebSocket.OPEN?disconnect():connect();
 $('#settingsForm').addEventListener('submit',e=>{e.preventDefault();settings.url=serverUrl.value.trim();settings.room=roomCode.value.trim();settings.sound=soundEnabled.checked;localStorage.setItem('osc.url',settings.url);localStorage.setItem('osc.room',settings.room);localStorage.setItem('osc.sound',String(settings.sound));dialog.close();connect()});
 setInterval(()=>{$('#sendRate').textContent=`${sent} msg/s`;sent=0},1000);
