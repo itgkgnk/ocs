@@ -1,0 +1,14 @@
+name = "osc-fader-relay"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
+
+# 公開ページだけに制限する場合はCloudflare側で設定:
+# ALLOWED_ORIGIN = "https://YOUR_NAME.github.io"

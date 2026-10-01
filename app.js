@@ -1,0 +1,21 @@
+const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
+const settings={url:localStorage.getItem('osc.url')||'',room:localStorage.getItem('osc.room')||'',sound:localStorage.getItem('osc.sound')!=='false'};
+let socket=null,retryTimer=null,sent=0,audio=null,lastTick=new Map(),pending=new Map(),raf=0;
+const dialog=$('#settingsDialog'),serverUrl=$('#serverUrl'),roomCode=$('#roomCode'),soundEnabled=$('#soundEnabled');
+serverUrl.value=settings.url;roomCode.value=settings.room;soundEnabled.checked=settings.sound;
+function setStatus(state,detail){const connected=state==='接続済み';$('#statusText').textContent=state;$('#roomText').textContent=detail;$('#statusDot').classList.toggle('connected',connected);$('#connectButton').textContent=connected?'切断':'接続';}
+function endpoint(){return `${settings.url.replace(/\/$/,'')}/room/${encodeURIComponent(settings.room)}?role=controller`;}
+function connect(){if(!settings.url||!settings.room){dialog.showModal();return}disconnect(false);setStatus('接続中…',`ROOM ${settings.room}`);try{socket=new WebSocket(endpoint());socket.onopen=()=>setStatus('接続済み',`ROOM ${settings.room}`);socket.onclose=()=>{setStatus('未接続','5秒後に再接続します');retryTimer=setTimeout(connect,5000)};socket.onerror=()=>setStatus('接続エラー','URLとWorker設定を確認してください');socket.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.type==='fader')applyRemote(m)}catch{}}}catch{setStatus('接続エラー','WebSocket URLが不正です')}}
+function disconnect(manual=true){clearTimeout(retryTimer);retryTimer=null;if(socket){socket.onclose=null;socket.close();socket=null}if(manual)setStatus('未接続','手動で切断しました')}
+function send(channel,value,final=false){pending.set(channel,{type:'fader',channel,value:value/100,final,at:Date.now()});if(!raf)raf=requestAnimationFrame(flush)}
+function flush(){raf=0;if(socket?.readyState!==WebSocket.OPEN)return;for(const msg of pending.values()){socket.send(JSON.stringify(msg));sent++}pending.clear()}
+function tick(card,channel,value){const step=Math.round(value/5);if(lastTick.get(channel)===step)return;lastTick.set(channel,step);card.classList.add('tick');setTimeout(()=>card.classList.remove('tick'),70);if(settings.sound)playTick(step%5===0)}
+function playTick(strong){audio??=new (window.AudioContext||window.webkitAudioContext)();const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=strong?780:620;g.gain.setValueAtTime(.035,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+.025);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+.03)}
+function updateCard(card,value,remote=false){const slider=card.querySelector('.vertical-fader'),out=card.querySelector('output'),ch=Number(card.dataset.channel);slider.value=value;out.value=Math.round(value);out.textContent=Math.round(value);tick(card,ch,value);if(!remote)send(ch,Number(value),false)}
+$$('.fader-card').forEach(card=>{const slider=card.querySelector('.vertical-fader');slider.addEventListener('input',()=>updateCard(card,slider.value));slider.addEventListener('change',()=>send(Number(card.dataset.channel),Number(slider.value),true));card.querySelector('.reset-button').addEventListener('click',()=>{updateCard(card,50);send(Number(card.dataset.channel),50,true)})});
+function applyRemote(m){const card=$(`.fader-card[data-channel="${Number(m.channel)}"]`);if(card)updateCard(card,Math.max(0,Math.min(100,Number(m.value)*100)),true)}
+$('#settingsButton').onclick=()=>dialog.showModal();$('#connectButton').onclick=()=>socket?.readyState===WebSocket.OPEN?disconnect():connect();
+$('#settingsForm').addEventListener('submit',e=>{e.preventDefault();settings.url=serverUrl.value.trim();settings.room=roomCode.value.trim();settings.sound=soundEnabled.checked;localStorage.setItem('osc.url',settings.url);localStorage.setItem('osc.room',settings.room);localStorage.setItem('osc.sound',String(settings.sound));dialog.close();connect()});
+setInterval(()=>{$('#sendRate').textContent=`${sent} msg/s`;sent=0},1000);
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+setStatus('未接続',settings.room?`ROOM ${settings.room}`:'接続設定を開いてください');

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#191919">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="OSC Fader">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+  <title>OSC Fader</title>
+</head>
+<body>
+  <main class="app-shell">
+    <header>
+      <div>
+        <p class="eyebrow">WEB OSC CONTROLLER</p>
+        <h1>OSC Fader</h1>
+      </div>
+      <button id="settingsButton" class="icon-button" aria-label="接続設定">⚙</button>
+    </header>
+
+    <section class="status-card" aria-live="polite">
+      <span id="statusDot" class="status-dot"></span>
+      <div><strong id="statusText">未接続</strong><small id="roomText">接続設定を開いてください</small></div>
+      <button id="connectButton" class="secondary-button">接続</button>
+    </section>
+
+    <section class="faders" aria-label="OSCフェーダー">
+      <article class="fader-card" data-channel="1">
+        <div class="fader-heading"><span>CH 1</span><output>50</output></div>
+        <div class="fader-zone">
+          <div class="ticks" aria-hidden="true"></div>
+          <input class="vertical-fader" type="range" min="0" max="100" value="50" step="1" aria-label="チャンネル1">
+        </div>
+        <button class="reset-button" data-value="50">CENTER</button>
+      </article>
+      <article class="fader-card" data-channel="2">
+        <div class="fader-heading"><span>CH 2</span><output>50</output></div>
+        <div class="fader-zone">
+          <div class="ticks" aria-hidden="true"></div>
+          <input class="vertical-fader" type="range" min="0" max="100" value="50" step="1" aria-label="チャンネル2">
+        </div>
+        <button class="reset-button" data-value="50">CENTER</button>
+      </article>
+      <article class="fader-card" data-channel="3">
+        <div class="fader-heading"><span>CH 3</span><output>50</output></div>
+        <div class="fader-zone">
+          <div class="ticks" aria-hidden="true"></div>
+          <input class="vertical-fader" type="range" min="0" max="100" value="50" step="1" aria-label="チャンネル3">
+        </div>
+        <button class="reset-button" data-value="50">CENTER</button>
+      </article>
+      <article class="fader-card" data-channel="4">
+        <div class="fader-heading"><span>CH 4</span><output>50</output></div>
+        <div class="fader-zone">
+          <div class="ticks" aria-hidden="true"></div>
+          <input class="vertical-fader" type="range" min="0" max="100" value="50" step="1" aria-label="チャンネル4">
+        </div>
+        <button class="reset-button" data-value="50">CENTER</button>
+      </article>
+    </section>
+
+    <footer><span id="sendRate">0 msg/s</span><span>v1.0.0</span></footer>
+  </main>
+
+  <dialog id="settingsDialog">
+    <form method="dialog" id="settingsForm">
+      <div class="dialog-heading"><div><p class="eyebrow">CONNECTION</p><h2>接続設定</h2></div><button value="cancel" class="icon-button" aria-label="閉じる">×</button></div>
+      <label>WebSocket URL<input id="serverUrl" type="url" inputmode="url" placeholder="wss://your-worker.workers.dev" required></label>
+      <label>ルームコード<input id="roomCode" type="text" inputmode="numeric" maxlength="12" placeholder="482913" required></label>
+      <label class="switch-row"><span><strong>操作音</strong><small>目盛り通過時にクリック</small></span><input id="soundEnabled" type="checkbox" checked></label>
+      <p class="notice">iOSブラウザでは振動できないため、クリック音と視覚効果を使用します。</p>
+      <button id="saveButton" value="default" class="primary-button">保存して接続</button>
+    </form>
+  </dialog>
+  <script src="./app.js" defer></script>
+</body>
+</html>
