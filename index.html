@@ -4,7 +4,7 @@
 <nav id="customToolbar" class="custom-toolbar hidden" aria-label="カスタム操作"><div class="segmented"><button class="active" data-view="channels">CH</button><button data-view="dca">DCA ON FADERS</button></div><div id="bankControls"><button id="prevBank" aria-label="前のバンク">‹</button><span id="bankLabel">BANK 1</span><button id="nextBank" aria-label="次のバンク">›</button></div></nav>
 <section id="dcaMasterBar" class="dca-master hidden" aria-label="DCAマスター"><strong>DCA MASTER</strong><input id="dcaMaster" type="range" min="0" max="100" step="1" value="100"><output id="dcaMasterOutput">100</output><button id="dcaMasterMax" class="secondary-button" type="button">MAX</button></section>
 <section id="faders" class="faders" aria-label="OSCフェーダー"></section>
-<footer><span id="sendRate">0 msg/s</span><span>v2.5.0</span></footer></main>
+<footer><span id="sendRate">0 msg/s</span><span>v2.8.0</span></footer></main>
 <dialog id="settingsDialog"><form id="settingsForm" novalidate><div class="dialog-heading"><div><p class="eyebrow">CONFIGURATION</p><h2>設定</h2></div><button type="button" id="closeSettings" class="icon-button">×</button></div>
 <div class="settings-tabs"><button type="button" class="active" data-tab="basic">基本</button><button type="button" data-tab="patch">OSCパッチ</button></div>
 <section class="tab-panel" data-panel="basic"><label>UIモード<select id="uiMode"><option value="simple">シンプル</option><option value="custom">カスタム</option></select></label><label>接続モード<select id="connectionMode"><option value="offline">オフライン</option><option value="local">同一LAN</option><option value="cloud">クラウド中継</option></select></label>
@@ -16,4 +16,4 @@
 <section class="tab-panel hidden" data-panel="patch"><p class="notice">Addressは小文字・スラッシュ区切り・英数字とハイフンのみ。無効な設定は送信しません。</p><div id="patchList" class="patch-list"></div></section>
 <p id="settingsError" class="error-text" role="alert"></p><button class="primary-button" type="submit">保存して適用</button></form></dialog>
 <dialog id="valueDialog"><form id="valueForm" novalidate><div class="dialog-heading"><div><p class="eyebrow">DIRECT VALUE</p><h2 id="valueTitle">値を指定</h2></div><button type="button" id="closeValue" class="icon-button">×</button></div><label>送信値<input id="directValue" type="number" inputmode="decimal"></label><p id="valueRange" class="helper"></p><p class="notice">入力中は送信されません。「値を適用」を押したときだけ反映します。</p><p id="valueError" class="error-text"></p><button class="primary-button" type="submit">値を適用</button></form></dialog>
-<script src="./app.js" defer></script></body></html>
+<script src="./config.js"></script><script src="./app.js" defer></script></body></html>
