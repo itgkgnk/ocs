@@ -1,55 +1,41 @@
-# OSC Fader PWA
+# OSC Fader PWA v1.2
 
-iPhone/iPadのホーム画面に追加できる4chフェーダーです。ブラウザ → WebSocketリレー → Unity → OSCで値を送ります。
+4chのWebフェーダーです。iOSでは物理振動の代わりに操作音と視覚フィードバックを使います。
 
-## 1. GitHub Pagesへ公開
+## GitHub Pages
 
-1. このフォルダーの中身をGitHubの新規リポジトリへアップロードします。
-2. リポジトリの **Settings → Pages → Source** を **GitHub Actions** にします。
-3. `main`へpushすると `.github/workflows/pages.yml` が公開します。
-4. 表示された `https://ユーザー名.github.io/リポジトリ名/` をiPhoneのSafariで開きます。
-5. 共有ボタン → **ホーム画面に追加** を選びます。
+リポジトリの Settings → Pages で `main` / `(root)` を公開します。クラウドモードではCloudflare Workerを経由してUnityへ接続します。
 
-## 2. CloudflareのWebSocketリレーを公開
+## 同一LANモード（インターネット不要）
 
-GitHub PagesだけではWebSocketサーバーを動かせないため、`worker/`をCloudflare Workersへ配置します。
+1. PCへNode.js LTSをインストールします。
+2. `local-server/start-local.bat`を実行します。初回のみ `ws` をインストールします。
+3. 表示された `http://192.168.x.x:8080/` を同じWi-FiのiPhoneで開きます。
+4. 設定 → 接続モードを「同一LAN」にして保存します。同じページから開いた場合、URLは空欄でも接続できます。
+5. Nodeサーバーは `/webfader/1`〜`/webfader/4` をfloat 0〜1で `127.0.0.1:9000` へOSC送信します。
 
-```bash
-cd worker
-npx wrangler login
-npx wrangler deploy
+変更例（PowerShell）:
+
+```powershell
+$env:OSC_HOST="127.0.0.1"
+$env:OSC_PORT="9000"
+$env:HTTP_PORT="8080"
+node local-server/server.js
 ```
 
-表示された `https://osc-fader-relay....workers.dev` をPWAの接続設定へ入力します。必要に応じてCloudflareのWorker変数 `ALLOWED_ORIGIN` にGitHub PagesのOriginを設定してください。
+UnityではuOSCの `uOscServer` をポート9000で待ち受けます。
 
-> `wrangler`、Durable Objectsの料金・無料枠・利用条件はCloudflareの最新情報を確認してください。
+## クラウドモード
 
-## 3. Unity側
+`worker/`をCloudflare Workersへデプロイし、PWAにWorker URLとルームコードを入力します。Unityでは `unity/CloudFaderToUosc.cs` とuOSCの `uOscClient`を同じGameObjectへ設定します。
 
-1. `unity/OscFaderReceiver.cs` をUnityプロジェクトへコピーします。
-2. 空のGameObjectへ追加します。
-3. `Relay Url`、`Room Code`、OSCの宛先IP／ポートを設定します。
-4. iPhone側にも同じRoom Codeを入力します。
+## iPhoneで音が出ない場合
 
-送信OSCアドレスは初期状態で以下です。
+- iPhoneの消音モードを解除します。
+- 音量を上げます。
+- 設定の「操作音」をONにします。
+- ページを開いた後、一度フェーダーへ触れます。最初のタッチでWeb Audioを有効化します。
 
-- `/webfader/1`〜`/webfader/4`
-- 引数は0.0〜1.0のfloat
+## 注意
 
-## セキュリティ
-
-ルームコードを知っている端末は参加できます。本番運用では長く推測しにくいコード、接続承認、認証、レート制限を追加してください。OSC UDPポートをインターネットへ直接公開しないでください。
-
-## iOSの制限
-
-iOSのブラウザ/PWAは一般的なVibration APIを利用できません。このUIでは目盛り通過時のクリック音と視覚効果を使います。最初の音はユーザー操作後に有効になります。
-
-## ローカル確認
-
-Service WorkerはHTTP/HTTPSで確認します。
-
-```bash
-python3 -m http.server 8080
-```
-
-`http://localhost:8080` を開いてください。
+GitHub Pages（HTTPS）からローカルの `ws://` へは接続できません。同一LANモードでは必ずPCの `http://PCのIP:8080/` を開いてください。Cloudflareモードとローカルモードは設定で切り替えられます。

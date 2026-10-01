@@ -1,0 +1,1 @@
+{"name":"osc-fader-local-server","private":true,"version":"1.0.0","description":"Local LAN bridge for OSC Fader PWA","main":"server.js","scripts":{"start":"node server.js"},"dependencies":{"ws":"^8.18.0"}}
